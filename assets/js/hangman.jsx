@@ -12,16 +12,22 @@ const defaultState = {
   remaining_letters: [],
 };
 
-function Hangman({ name }) {
+function Hangman({ names }) {
+  const { game, user } = names;
   const [state, setState] = useState(defaultState);
 
   useEffect(() => {
-    channel = socket.channel("game:" + name);
+    channel = socket.channel("game:" + game, { user: user });
+    channel.on("update", (view) => {
+      console.log("Got update", view);
+      setState(view);
+    });
     channel.join()
       .receive("ok", (resp) => {
         console.log("Joined successfully:", resp);
         setState(resp.view);
       });
+
   }, []);
 
   let remaining = state.remaining_letters;
@@ -47,7 +53,7 @@ function Hangman({ name }) {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-200">
       <div className="bg-white p-8 rounded-lg shadow-lg text-center">
-        <p className="text-4xl mb-4 font-bold">Hangman: {name}</p>
+        <p className="text-4xl mb-4 font-bold">Hangman: {game}</p>
         <p className="text-3xl tracking-widest mb-6">{state.letters_view}</p>
         <p className="text-xl">Bad guesses: {bad_guesses}</p>
         <p className="text-xl">{guess_links}</p>
@@ -65,22 +71,24 @@ function Hangman({ name }) {
 }
 
 function Game() {
-  const [name, setName] = useState(null);
+  const [names, setNames] = useState({ user: null, game: null });
 
   function join_game(ev) {
     ev.preventDefault();
-    let name = document.getElementById('game-name').value;
-    setName(name);
+    let user = document.getElementById('player-name').value;
+    let game = document.getElementById('game-name').value;
+    setNames({ user, game });
   }
 
-  if (name) {
-    return <Hangman name={name} />;
+  if (names.user && names.game) {
+    return <Hangman names={names} />;
   }
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-200">
       <div className="bg-white p-8 rounded-lg shadow-lg text-center">
         <p className="text-4xl mb-4 font-bold">Hangman</p>
+        <p>Player Name: <input className="bg-blue-100" type="text" id="player-name" /></p>
         <p>Game Name: <input className="bg-blue-100" type="text" id="game-name" /></p>
         <p className="mt-6">
           <button

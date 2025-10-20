@@ -1,17 +1,21 @@
 defmodule Hangman.Game do
   alias __MODULE__
 
-  defstruct [:word, :guesses]
+  defstruct [:name, :word, :guesses, :cooldowns]
 
-  def new() do
+  def new(name) when is_binary(name) do
     %Game{
+      name: name,
       word: hd(Enum.shuffle(words())),
-      guesses: MapSet.new()
+      guesses: MapSet.new(),
+      cooldowns: %{}
     }
   end
 
-  def guess(%Game{} = gg, letter) do
-    %Game{gg | guesses: MapSet.put(gg.guesses, letter)}
+  def guess(%Game{} = gg, user, letter) do
+    guesses = MapSet.put(gg.guesses, letter)
+    cooldowns = Map.put(gg.cooldowns, user, DateTime.now("Etc/UTC"))
+    %Game{gg | guesses: guesses, cooldowns: cooldowns}
   end
 
   def view(%Game{} = gg) do
