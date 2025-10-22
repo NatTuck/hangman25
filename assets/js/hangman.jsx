@@ -15,6 +15,7 @@ const defaultState = {
 function Hangman({ names }) {
   const { game, user } = names;
   const [state, setState] = useState(defaultState);
+  const [cooldown, setCooldown] = useState(null);
 
   useEffect(() => {
     channel = socket.channel("game:" + game, { user: user });
@@ -32,15 +33,37 @@ function Hangman({ names }) {
 
   let remaining = state.remaining_letters;
 
+  function count_down(nn) {
+    console.log("nn", nn);
+    if (nn > 0) {
+      console.log("decr");
+      setCooldown(nn - 1);
+      window.setTimeout(() => count_down(nn - 1), 1000);
+    }
+    else {
+      console.log("null");
+      setCooldown(null);
+    }
+  }
+
   function click_guess(ev, letter) {
     ev.preventDefault();
     channel.push("guess", { letter })
-      .receive("ok", setState);
+      .receive("ok", (view) => {
+        setCooldown(5);
+        window.setTimeout(() => count_down(5), 1000);
+        setState(view);
+      });
   }
 
   let guess_links = Array.from(remaining).map((letter) => (
     <a href="#" key={letter} onClick={(ev) => click_guess(ev, letter)}>{letter}</a>
   ));
+
+  let guess_links_or_cooldown = guess_links;
+  if (cooldown) {
+    guess_links_or_cooldown = cooldown;
+  }
 
   let bad_guesses = state.bad_guesses;
 
@@ -53,10 +76,12 @@ function Hangman({ names }) {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-200">
       <div className="bg-white p-8 rounded-lg shadow-lg text-center">
+        <p className="text-xl">User: {names.user}</p>
         <p className="text-4xl mb-4 font-bold">Hangman: {game}</p>
         <p className="text-3xl tracking-widest mb-6">{state.letters_view}</p>
         <p className="text-xl">Bad guesses: {bad_guesses}</p>
-        <p className="text-xl">{guess_links}</p>
+        <p className="text-xl">{guess_links_or_cooldown}</p>
+        <p className="text-xl">Last action: {state.last_action}</p>
         <p className="mt-6">
           <button
             onClick={reset}

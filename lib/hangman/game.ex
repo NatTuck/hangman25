@@ -1,28 +1,46 @@
 defmodule Hangman.Game do
   alias __MODULE__
 
-  defstruct [:name, :word, :guesses, :cooldowns]
+  defstruct [:name, :word, :guesses, :cooldowns, :last_action]
 
   def new(name) when is_binary(name) do
     %Game{
       name: name,
       word: hd(Enum.shuffle(words())),
       guesses: MapSet.new(),
-      cooldowns: %{}
+      cooldowns: %{},
+      last_action: ""
     }
   end
 
   def guess(%Game{} = gg, user, letter) do
-    guesses = MapSet.put(gg.guesses, letter)
-    cooldowns = Map.put(gg.cooldowns, user, DateTime.now("Etc/UTC"))
-    %Game{gg | guesses: guesses, cooldowns: cooldowns}
+    if on_cooldown?(gg, user) do
+      # Ignore early guesses
+      gg
+    else
+      guesses = MapSet.put(gg.guesses, letter)
+      cooldowns = Map.put(gg.cooldowns, user, DateTime.now!("Etc/UTC"))
+      %Game{gg | guesses: guesses, cooldowns: cooldowns, last_action: user}
+    end
+  end
+
+  def on_cooldown?(%Game{cooldowns: cooldowns}, user) do
+    case Map.fetch(cooldowns, user) do
+      {:ok, cd} ->
+        now = DateTime.now!("Etc/UTC")
+        DateTime.diff(now, cd) <= 5
+
+      :error ->
+        false
+    end
   end
 
   def view(%Game{} = gg) do
     %{
       letters_view: letters_view(gg),
       bad_guesses: bad_guesses(gg),
-      remaining_letters: remaining_letters(gg)
+      remaining_letters: remaining_letters(gg),
+      last_action: gg.last_action
     }
   end
 
