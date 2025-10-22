@@ -56,11 +56,44 @@ function Hangman({ names }) {
       });
   }
 
-  let guess_links = Array.from(remaining).map((letter) => (
-    <a href="#" key={letter} onClick={(ev) => click_guess(ev, letter)}>{letter}</a>
+  let all_letters = [
+    "QWERTYUIOP",
+    "ASDFGHJKL",
+    "ZXCVBNM"
+  ];
+
+  function create_button(letter, remaining) {
+    let active_class = "bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 m-1 rounded transition-colors duration-300 ease-in-out";
+    let inactive_class = "bg-gray-500 text-white font-bold py-2 px-4 m-1 rounded transition-colors duration-300 ease-in-out";
+
+    if (remaining.includes(letter)) {
+      return (
+        <button
+          key={letter}
+          onClick={(ev) => click_guess(ev, letter)}
+          className={active_class}
+        >
+          {letter}
+        </button>
+      );
+    }
+    return (
+      <button
+        key={letter}
+        className={inactive_class}
+      >
+        {letter}
+      </button>
+    );
+  }
+
+  let rows = all_letters.map((row, rowIndex) => (
+    <div key={rowIndex}>
+      {Array.from(row).map((letter) => create_button(letter.toLowerCase(), remaining))}
+    </div>
   ));
 
-  let guess_links_or_cooldown = guess_links;
+  let guess_links_or_cooldown = rows;
   if (cooldown) {
     guess_links_or_cooldown = cooldown;
   }
