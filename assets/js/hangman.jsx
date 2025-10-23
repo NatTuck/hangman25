@@ -57,14 +57,15 @@ function Hangman({ names }) {
   }
 
   let all_letters = [
-    "QWERTYUIOP",
-    "ASDFGHJKL",
-    "ZXCVBNM"
+    "qwertyuiop",
+    "asdfghjkl",
+    "zxcvbnm"
   ];
 
   function create_button(letter, remaining) {
-    let active_class = "bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 m-1 rounded transition-colors duration-300 ease-in-out";
-    let inactive_class = "bg-gray-500 text-white font-bold py-2 px-4 m-1 rounded transition-colors duration-300 ease-in-out";
+    let base_class = "text-white font-bold w-10 h-14 p-0 m-1 rounded transition-colors duration-300 ease-in-out";
+    let active_class = "bg-blue-500 hover:bg-blue-600 " + base_class;
+    let inactive_class = "bg-gray-500 " + base_class;
 
     if (remaining.includes(letter)) {
       return (
@@ -73,7 +74,7 @@ function Hangman({ names }) {
           onClick={(ev) => click_guess(ev, letter)}
           className={active_class}
         >
-          {letter}
+          {letter.toUpperCase()}
         </button>
       );
     }
@@ -82,14 +83,14 @@ function Hangman({ names }) {
         key={letter}
         className={inactive_class}
       >
-        {letter}
+        {letter.toUpperCase()}
       </button>
     );
   }
 
   let rows = all_letters.map((row, rowIndex) => (
-    <div key={rowIndex}>
-      {Array.from(row).map((letter) => create_button(letter.toLowerCase(), remaining))}
+    <div key={rowIndex} className="flex justify-center mb-2">
+      {Array.from(row).map((letter) => create_button(letter, remaining))}
     </div>
   ));
 
@@ -113,12 +114,12 @@ function Hangman({ names }) {
         <p className="text-4xl mb-4 font-bold">Hangman: {game}</p>
         <p className="text-3xl tracking-widest mb-6">{state.letters_view}</p>
         <p className="text-xl">Bad guesses: {bad_guesses}</p>
-        <p className="text-xl">{guess_links_or_cooldown}</p>
+        <p className="text-xl pt-4">{guess_links_or_cooldown}</p>
         <p className="text-xl">Last action: {state.last_action}</p>
         <p className="mt-6">
           <button
             onClick={reset}
-            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full transition-colors duration-300 ease-in-out"
+            className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-full transition-colors duration-300 ease-in-out"
           >
             Reset Game
           </button>
@@ -151,7 +152,7 @@ function Game() {
         <p className="mt-6">
           <button
             onClick={join_game}
-            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full transition-colors duration-300 ease-in-out"
+            className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-full transition-colors duration-300 ease-in-out"
           >
             Join Game
           </button>
